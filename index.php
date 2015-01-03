@@ -4,6 +4,6 @@
 	
 	require_once 'include/bootstrap.php';
 	
-	echo "Hello 2015!";
+	echo "Hello to 2015!";
 
 ?>
