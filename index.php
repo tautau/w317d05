@@ -2,8 +2,6 @@
 
 	define('__WEIRDOS__', 'weirdos'); // Main entry point lock
 	
-	require_once 'include/bootstrap.php';
+        require_once __DIR__ . '/include/bootstrap.php';
 	
-	echo "Hello to 2015!";
-
-?>
+        echo "Hello to 2015!";
