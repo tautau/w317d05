@@ -1,0 +1,13 @@
+{
+  "name": "w317d05",
+  "version": "1.0.0",
+  "private": false,
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "node api/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
