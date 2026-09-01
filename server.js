@@ -66,18 +66,25 @@ const html = `<!doctype html>
     .dashboard { z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 22px; background: rgba(255,255,255,.94); border-bottom: 1px solid rgba(24,35,42,.12); box-shadow: 0 8px 25px rgba(38,69,54,.1); }
     .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; letter-spacing: -.02em; }
     .brand-mark { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: #203239; color: white; font-size: 13px; }
+    .dashboard-actions { display: flex; align-items: center; gap: 14px; }
     .time { display: flex; align-items: baseline; gap: 10px; }
     .time-label { color: #6a777a; font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
     .date { font-variant-numeric: tabular-nums; font-size: 24px; font-weight: 900; letter-spacing: -.03em; }
-    .viewport { min-height: 0; overflow: auto; overscroll-behavior: contain; background: #c7d8c3; }
-    .world { position: relative; width: 98304px; height: 98304px; background-color: #d5e4cf; background-image: linear-gradient(to right, rgba(81,108,78,.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(81,108,78,.22) 1px, transparent 1px); background-size: 48px 48px; }
-    .world::after { content: ""; position: absolute; left: 0; top: 0; width: 98304px; height: 98304px; pointer-events: none; background-image: radial-gradient(circle at center, rgba(255,255,255,.18) 0 1px, transparent 1px); background-size: 48px 48px; }
-    .start-marker { position: absolute; left: 49104px; top: 49104px; width: 48px; height: 48px; border: 2px solid rgba(32,50,57,.25); border-radius: 8px; background: rgba(255,255,255,.25); }
+    .zoom-controls { display: flex; align-items: center; gap: 5px; padding: 5px; border-radius: 12px; background: #eef4ec; border: 1px solid rgba(24,35,42,.1); }
+    .zoom-button { width: 38px; height: 38px; border: 0; border-radius: 9px; background: white; color: #203239; cursor: pointer; font-size: 24px; line-height: 1; font-weight: 800; display: grid; place-items: center; box-shadow: 0 4px 10px rgba(38,69,54,.08); }
+    .zoom-button:active { transform: scale(.96); }
+    .zoom-level { min-width: 50px; text-align: center; font-size: 12px; font-weight: 800; color: #52676b; }
+    .viewport { min-height: 0; overflow: auto; overscroll-behavior: contain; background: #c7d8c3; touch-action: none; }
+    .world { position: relative; width: 24576px; height: 24576px; transform-origin: 0 0; background-color: #d5e4cf; background-image: linear-gradient(to right, rgba(81,108,78,.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(81,108,78,.22) 1px, transparent 1px); background-size: 48px 48px; }
+    .world::after { content: ""; position: absolute; left: 0; top: 0; width: 24576px; height: 24576px; pointer-events: none; background-image: radial-gradient(circle at center, rgba(255,255,255,.18) 0 1px, transparent 1px); background-size: 48px 48px; }
+    .start-marker { position: absolute; left: 12240px; top: 12240px; width: 48px; height: 48px; border: 2px solid rgba(32,50,57,.25); border-radius: 8px; background: rgba(255,255,255,.25); }
     .hint { position: fixed; left: 18px; bottom: 16px; z-index: 20; padding: 9px 12px; border-radius: 10px; background: rgba(32,50,57,.84); color: white; font-size: 12px; box-shadow: 0 8px 20px rgba(0,0,0,.12); }
     @media (max-width: 800px) {
       .scene { padding: 48px 36px 210px; }
       .city { right: 4px; bottom: 6px; transform: scale(.78); transform-origin: bottom right; opacity: .78; }
-      .dashboard { padding: 0 14px; }.date { font-size: 20px; }.brand span:last-child { display: none; }
+      .dashboard { padding: 0 12px; }.dashboard-actions { gap: 8px; }.time-label { display: none; }.date { font-size: 18px; }.brand span:last-child { display: none; }.zoom-level { display: none; }
+      .zoom-button { width: 42px; height: 42px; }
+      .hint { display: none; }
     }
   </style>
 </head>
@@ -109,31 +116,70 @@ const html = `<!doctype html>
   <section class="screen game" id="gameScreen" hidden>
     <header class="dashboard">
       <div class="brand"><span class="brand-mark">w</span><span>w317d05</span></div>
-      <div class="time"><span class="time-label">City time</span><span class="date" id="gameDate">2025-01-01</span></div>
+      <div class="dashboard-actions">
+        <div class="time"><span class="time-label">City time</span><span class="date" id="gameDate">2025-01-01</span></div>
+        <div class="zoom-controls" aria-label="Zoom controls">
+          <button class="zoom-button" id="zoomOut" type="button" aria-label="Zoom out" title="Zoom out">−</button>
+          <span class="zoom-level" id="zoomLevel">100%</span>
+          <button class="zoom-button" id="zoomIn" type="button" aria-label="Zoom in" title="Zoom in">+</button>
+        </div>
+      </div>
     </header>
     <div class="viewport" id="viewport" tabindex="0" aria-label="City viewport">
-      <div class="world"><div class="start-marker" aria-hidden="true"></div></div>
+      <div class="world" id="world"><div class="start-marker" aria-hidden="true"></div></div>
     </div>
-    <div class="hint">2048 × 2048 tiles · 48 px each · scroll to explore</div>
+    <div class="hint">512 × 512 tiles · 48 px each · pinch or use + / − to zoom</div>
   </section>
 
   <script>
     const TILE_SIZE = 48;
-    const GRID_SIZE = 2048;
+    const GRID_SIZE = 512;
     const DAY_MS = 5000;
+    const WORLD_SIZE = GRID_SIZE * TILE_SIZE;
     const START_X = Math.floor(GRID_SIZE / 2) * TILE_SIZE;
     const START_Y = Math.floor(GRID_SIZE / 2) * TILE_SIZE;
+    const MIN_ZOOM = 0.5;
+    const MAX_ZOOM = 2.5;
+    const ZOOM_STEP = 1.2;
+    let zoom = 1;
     let simulationTimer = null;
+    let pinchState = null;
 
     const welcomeScreen = document.getElementById('welcomeScreen');
     const gameScreen = document.getElementById('gameScreen');
     const viewport = document.getElementById('viewport');
+    const world = document.getElementById('world');
     const startYear = document.getElementById('startYear');
     const startGame = document.getElementById('startGame');
     const gameDate = document.getElementById('gameDate');
+    const zoomIn = document.getElementById('zoomIn');
+    const zoomOut = document.getElementById('zoomOut');
+    const zoomLevel = document.getElementById('zoomLevel');
 
     function formatDate(date) {
       return [date.getUTCFullYear(), String(date.getUTCMonth() + 1).padStart(2, '0'), String(date.getUTCDate()).padStart(2, '0')].join('-');
+    }
+
+    function applyZoom(nextZoom, anchorX = viewport.clientWidth / 2, anchorY = viewport.clientHeight / 2) {
+      const clampedZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, nextZoom));
+      if (clampedZoom === zoom) return;
+
+      const worldX = (viewport.scrollLeft + anchorX) / zoom;
+      const worldY = (viewport.scrollTop + anchorY) / zoom;
+      zoom = clampedZoom;
+      world.style.width = WORLD_SIZE * zoom + 'px';
+      world.style.height = WORLD_SIZE * zoom + 'px';
+      world.style.backgroundSize = (TILE_SIZE * zoom) + 'px ' + (TILE_SIZE * zoom) + 'px';
+      world.style.setProperty('--marker-size', TILE_SIZE * zoom + 'px');
+      const marker = world.querySelector('.start-marker');
+      marker.style.left = START_X * zoom + 'px';
+      marker.style.top = START_Y * zoom + 'px';
+      marker.style.width = TILE_SIZE * zoom + 'px';
+      marker.style.height = TILE_SIZE * zoom + 'px';
+      zoomLevel.textContent = Math.round(zoom * 100) + '%';
+
+      viewport.scrollLeft = worldX * zoom - anchorX;
+      viewport.scrollTop = worldY * zoom - anchorY;
     }
 
     function startSimulation(year) {
@@ -150,12 +196,70 @@ const html = `<!doctype html>
       const year = startYear.value;
       welcomeScreen.hidden = true;
       gameScreen.hidden = false;
+      zoom = 1;
+      world.style.width = WORLD_SIZE + 'px';
+      world.style.height = WORLD_SIZE + 'px';
+      world.style.backgroundSize = TILE_SIZE + 'px ' + TILE_SIZE + 'px';
+      const marker = world.querySelector('.start-marker');
+      marker.style.left = START_X + 'px';
+      marker.style.top = START_Y + 'px';
+      marker.style.width = TILE_SIZE + 'px';
+      marker.style.height = TILE_SIZE + 'px';
+      zoomLevel.textContent = '100%';
       viewport.scrollLeft = START_X - viewport.clientWidth / 2;
       viewport.scrollTop = START_Y - viewport.clientHeight / 2;
       viewport.focus({ preventScroll: true });
       startSimulation(year);
     }
 
+    zoomIn.addEventListener('click', () => applyZoom(zoom * ZOOM_STEP));
+    zoomOut.addEventListener('click', () => applyZoom(zoom / ZOOM_STEP));
+
+    viewport.addEventListener('wheel', (event) => {
+      if (!event.ctrlKey) return;
+      event.preventDefault();
+      const rect = viewport.getBoundingClientRect();
+      const anchorX = event.clientX - rect.left;
+      const anchorY = event.clientY - rect.top;
+      applyZoom(zoom * (event.deltaY < 0 ? 1.1 : 1 / 1.1), anchorX, anchorY);
+    }, { passive: false });
+
+    viewport.addEventListener('pointerdown', (event) => {
+      if (event.pointerType !== 'touch') return;
+      viewport.setPointerCapture?.(event.pointerId);
+      const touches = event.getCoalescedEvents ? event.getCoalescedEvents() : [event];
+      if (touches.length !== 1) return;
+      if (!pinchState) pinchState = { pointers: new Map(), startDistance: 0, startZoom: zoom };
+      pinchState.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (pinchState.pointers.size === 2) {
+        const points = [...pinchState.pointers.values()];
+        pinchState.startDistance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+        pinchState.startZoom = zoom;
+      }
+    });
+
+    viewport.addEventListener('pointermove', (event) => {
+      if (!pinchState || event.pointerType !== 'touch' || !pinchState.pointers.has(event.pointerId)) return;
+      pinchState.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (pinchState.pointers.size !== 2 || !pinchState.startDistance) return;
+      const points = [...pinchState.pointers.values()];
+      const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+      if (!distance) return;
+      const rect = viewport.getBoundingClientRect();
+      const anchorX = ((points[0].x + points[1].x) / 2) - rect.left;
+      const anchorY = ((points[0].y + points[1].y) / 2) - rect.top;
+      applyZoom(pinchState.startZoom * (distance / pinchState.startDistance), anchorX, anchorY);
+    });
+
+    function endPointer(event) {
+      if (!pinchState || !pinchState.pointers.has(event.pointerId)) return;
+      pinchState.pointers.delete(event.pointerId);
+      if (pinchState.pointers.size < 2) pinchState.startDistance = 0;
+      if (pinchState.pointers.size === 0) pinchState = null;
+    }
+
+    viewport.addEventListener('pointerup', endPointer);
+    viewport.addEventListener('pointercancel', endPointer);
     startGame.addEventListener('click', openCity);
   </script>
 </body>
