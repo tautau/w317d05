@@ -118,7 +118,6 @@ const html = `<!doctype html>
     const MAX_ZOOM = 2.5;
     const ZOOM_STEP = 1.2;
     const TAP_TOLERANCE = 8;
-
     let zoom = 1;
     let simulationTimer = null;
     const pointers = new Map();
@@ -170,16 +169,6 @@ const html = `<!doctype html>
       viewport.scrollTop = worldY * zoom - anchorY;
     }
 
-    function startSimulation(year) {
-      let currentDate = new Date(Date.UTC(Number(year), 0, 1));
-      gameDate.textContent = formatDate(currentDate);
-      clearInterval(simulationTimer);
-      simulationTimer = setInterval(() => {
-        currentDate.setUTCDate(currentDate.getUTCDate() + 1);
-        gameDate.textContent = formatDate(currentDate);
-      }, DAY_MS);
-    }
-
     function selectCell(clientX, clientY) {
       const worldRect = world.getBoundingClientRect();
       const localX = clientX - worldRect.left;
@@ -197,6 +186,16 @@ const html = `<!doctype html>
       selectedCell.style.width = tilePixels + 'px';
       selectedCell.style.height = tilePixels + 'px';
       selectedCell.style.display = 'block';
+    }
+
+    function startSimulation(year) {
+      let currentDate = new Date(Date.UTC(Number(year), 0, 1));
+      gameDate.textContent = formatDate(currentDate);
+      clearInterval(simulationTimer);
+      simulationTimer = setInterval(() => {
+        currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+        gameDate.textContent = formatDate(currentDate);
+      }, DAY_MS);
     }
 
     function openCity() {
@@ -221,9 +220,7 @@ const html = `<!doctype html>
       if (!event.ctrlKey) return;
       event.preventDefault();
       const rect = viewport.getBoundingClientRect();
-      const anchorX = event.clientX - rect.left;
-      const anchorY = event.clientY - rect.top;
-      applyZoom(zoom * (event.deltaY < 0 ? 1.1 : 1 / 1.1), anchorX, anchorY);
+      applyZoom(zoom * (event.deltaY < 0 ? 1.1 : 1 / 1.1), event.clientX - rect.left, event.clientY - rect.top);
     }, { passive: false });
 
     viewport.addEventListener('pointerdown', (event) => {
@@ -265,9 +262,7 @@ const html = `<!doctype html>
         return;
       }
 
-      if (gesture?.type === 'touch' && gesture.pointerId === event.pointerId && Math.hypot(event.clientX - gesture.startX, event.clientY - gesture.startY) > TAP_TOLERANCE) {
-        gesture.moved = true;
-      }
+      if (gesture?.type === 'touch' && gesture.pointerId === event.pointerId && Math.hypot(event.clientX - gesture.startX, event.clientY - gesture.startY) > TAP_TOLERANCE) gesture.moved = true;
     });
 
     viewport.addEventListener('pointerup', (event) => {
@@ -301,6 +296,7 @@ const html = `<!doctype html>
     viewport.addEventListener('pointercancel', (event) => {
       pointers.delete(event.pointerId);
       if (pointers.size < 2) gesture = null;
+      if (gesture?.pointerId === event.pointerId) gesture = null;
     });
 
     viewport.addEventListener('click', (event) => {
@@ -325,5 +321,5 @@ const server = createServer((req, res) => {
 });
 
 server.listen(port, () => {
-  console.log(\`w317d05 listening on port \${port}\`);
+  console.log(`w317d05 listening on port ${port}`);
 });
