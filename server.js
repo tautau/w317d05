@@ -52,8 +52,9 @@ const html = `<!doctype html>
     .viewport { min-height: 0; overflow: auto; overscroll-behavior: contain; background: #c7d8c3; touch-action: pan-x pan-y; }
     .world { position: relative; width: 24576px; height: 24576px; background-color: #d5e4cf; background-image: linear-gradient(to right, rgba(81,108,78,.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(81,108,78,.22) 1px, transparent 1px); background-size: 48px 48px; }
     .world::after { content: ""; position: absolute; inset: 0; pointer-events: none; background-image: radial-gradient(circle at center, rgba(255,255,255,.18) 0 1px, transparent 1px); background-size: 48px 48px; }
-    .start-marker { position: absolute; border: 2px solid rgba(32,50,57,.25); border-radius: 8px; background: rgba(255,255,255,.25); pointer-events: none; }
-    .selected-cell { position: absolute; pointer-events: none; border: 3px solid #203239; background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.55), 0 0 0 1px rgba(255,255,255,.35); display: none; z-index: 4; }
+    .start-marker, .selected-cell { position: absolute; box-sizing: border-box; pointer-events: none; }
+    .start-marker { border: 2px solid rgba(32,50,57,.25); border-radius: 8px; background: rgba(255,255,255,.25); }
+    .selected-cell { border: 3px solid #203239; background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.55), 0 0 0 1px rgba(255,255,255,.35); display: none; z-index: 4; }
     .hint { position: fixed; left: 18px; bottom: 16px; z-index: 20; padding: 9px 12px; border-radius: 10px; background: rgba(32,50,57,.84); color: white; font-size: 12px; box-shadow: 0 8px 20px rgba(0,0,0,.12); }
     @media (max-width: 800px) {
       .scene { padding: 48px 36px 210px; }
@@ -117,11 +118,11 @@ const html = `<!doctype html>
     const MAX_ZOOM = 2.5;
     const ZOOM_STEP = 1.2;
     const TAP_TOLERANCE = 8;
+
     let zoom = 1;
     let simulationTimer = null;
-    let pointers = new Map();
-    let primaryGesture = null;
-    let pinchGesture = null;
+    const pointers = new Map();
+    let gesture = null;
 
     const welcomeScreen = document.getElementById('welcomeScreen');
     const gameScreen = document.getElementById('gameScreen');
@@ -159,32 +160,14 @@ const html = `<!doctype html>
     }
 
     function applyZoom(nextZoom, anchorX = viewport.clientWidth / 2, anchorY = viewport.clientHeight / 2) {
-      const clamped = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, nextZoom));
-      if (clamped === zoom) return;
+      const next = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, nextZoom));
+      if (next === zoom) return;
       const worldX = (viewport.scrollLeft + anchorX) / zoom;
       const worldY = (viewport.scrollTop + anchorY) / zoom;
-      zoom = clamped;
+      zoom = next;
       renderZoom();
       viewport.scrollLeft = worldX * zoom - anchorX;
       viewport.scrollTop = worldY * zoom - anchorY;
-    }
-
-    function selectCell(clientX, clientY) {
-      const rect = world.getBoundingClientRect();
-      const localX = clientX - rect.left;
-      const localY = clientY - rect.top;
-      if (localX < 0 || localY < 0) return;
-      const tilePixels = rect.width / GRID_SIZE;
-      const cellX = Math.floor(localX / tilePixels);
-      const cellY = Math.floor(localY / tilePixels);
-      if (cellX < 0 || cellY < 0 || cellX >= GRID_SIZE || cellY >= GRID_SIZE) return;
-      selectedCell.dataset.cellX = String(cellX);
-      selectedCell.dataset.cellY = String(cellY);
-      selectedCell.style.left = cellX * tilePixels + 'px';
-      selectedCell.style.top = cellY * tilePixels + 'px';
-      selectedCell.style.width = tilePixels + 'px';
-      selectedCell.style.height = tilePixels + 'px';
-      selectedCell.style.display = 'block';
     }
 
     function startSimulation(year) {
@@ -197,27 +180,38 @@ const html = `<!doctype html>
       }, DAY_MS);
     }
 
+    function selectCell(clientX, clientY) {
+      const worldRect = world.getBoundingClientRect();
+      const localX = clientX - worldRect.left;
+      const localY = clientY - worldRect.top;
+      if (localX < 0 || localY < 0 || localX >= worldRect.width || localY >= worldRect.height) return;
+
+      const cellX = Math.min(GRID_SIZE - 1, Math.floor((localX / worldRect.width) * GRID_SIZE));
+      const cellY = Math.min(GRID_SIZE - 1, Math.floor((localY / worldRect.height) * GRID_SIZE));
+      const tilePixels = worldRect.width / GRID_SIZE;
+
+      selectedCell.dataset.cellX = String(cellX);
+      selectedCell.dataset.cellY = String(cellY);
+      selectedCell.style.left = cellX * tilePixels + 'px';
+      selectedCell.style.top = cellY * tilePixels + 'px';
+      selectedCell.style.width = tilePixels + 'px';
+      selectedCell.style.height = tilePixels + 'px';
+      selectedCell.style.display = 'block';
+    }
+
     function openCity() {
       const year = startYear.value;
       welcomeScreen.hidden = true;
       gameScreen.hidden = false;
       zoom = 1;
-      selectedCell.style.display = 'none';
       delete selectedCell.dataset.cellX;
       delete selectedCell.dataset.cellY;
+      selectedCell.style.display = 'none';
       renderZoom();
       viewport.scrollLeft = START_X - viewport.clientWidth / 2;
       viewport.scrollTop = START_Y - viewport.clientHeight / 2;
       viewport.focus({ preventScroll: true });
       startSimulation(year);
-    }
-
-    function pointerDistance(a, b) {
-      return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-    }
-
-    function pointerMidpoint(a, b) {
-      return { x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 };
     }
 
     zoomIn.addEventListener('click', () => applyZoom(zoom * ZOOM_STEP));
@@ -227,83 +221,95 @@ const html = `<!doctype html>
       if (!event.ctrlKey) return;
       event.preventDefault();
       const rect = viewport.getBoundingClientRect();
-      applyZoom(zoom * (event.deltaY < 0 ? 1.1 : 1 / 1.1), event.clientX - rect.left, event.clientY - rect.top);
+      const anchorX = event.clientX - rect.left;
+      const anchorY = event.clientY - rect.top;
+      applyZoom(zoom * (event.deltaY < 0 ? 1.1 : 1 / 1.1), anchorX, anchorY);
     }, { passive: false });
 
     viewport.addEventListener('pointerdown', (event) => {
-      pointers.set(event.pointerId, { clientX: event.clientX, clientY: event.clientY, startX: event.clientX, startY: event.clientY, type: event.pointerType });
-
-      if (event.pointerType === 'touch') {
-        if (pointers.size === 2) {
-          const [a, b] = [...pointers.values()];
-          const midpoint = pointerMidpoint(a, b);
-          const rect = viewport.getBoundingClientRect();
-          pinchGesture = {
-            startDistance: pointerDistance(a, b),
-            startZoom: zoom,
-            anchorX: midpoint.x - rect.left,
-            anchorY: midpoint.y - rect.top
-          };
-          primaryGesture = null;
-        }
+      if (event.pointerType !== 'touch') {
+        gesture = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, moved: false };
         return;
       }
 
-      primaryGesture = { id: event.pointerId, moved: false, startX: event.clientX, startY: event.clientY };
+      pointers.set(event.pointerId, { clientX: event.clientX, clientY: event.clientY });
+      if (pointers.size === 2) {
+        const [a, b] = [...pointers.values()];
+        const midpoint = { x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 };
+        const rect = viewport.getBoundingClientRect();
+        gesture = {
+          type: 'pinch',
+          startDistance: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY),
+          startZoom: zoom,
+          anchorX: midpoint.x - rect.left,
+          anchorY: midpoint.y - rect.top
+        };
+      } else {
+        gesture = { type: 'touch', pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, moved: false };
+      }
     });
 
     viewport.addEventListener('pointermove', (event) => {
-      const state = pointers.get(event.pointerId);
-      if (!state) return;
-      state.clientX = event.clientX;
-      state.clientY = event.clientY;
-      pointers.set(event.pointerId, state);
-
-      if (event.pointerType === 'touch' && pointers.size >= 2) {
-        const [a, b] = [...pointers.values()];
-        if (!pinchGesture) {
-          const midpoint = pointerMidpoint(a, b);
-          const rect = viewport.getBoundingClientRect();
-          pinchGesture = { startDistance: pointerDistance(a, b), startZoom: zoom, anchorX: midpoint.x - rect.left, anchorY: midpoint.y - rect.top };
-        }
-        const distance = pointerDistance(a, b);
-        if (pinchGesture.startDistance > 0) {
-          applyZoom(pinchGesture.startZoom * (distance / pinchGesture.startDistance), pinchGesture.anchorX, pinchGesture.anchorY);
-        }
+      if (event.pointerType !== 'touch') {
+        if (gesture?.pointerId === event.pointerId && Math.hypot(event.clientX - gesture.startX, event.clientY - gesture.startY) > TAP_TOLERANCE) gesture.moved = true;
         return;
       }
 
-      const gesture = primaryGesture;
-      if (!gesture || gesture.id !== event.pointerId) return;
-      if (Math.hypot(event.clientX - gesture.startX, event.clientY - gesture.startY) > TAP_TOLERANCE) gesture.moved = true;
+      if (!pointers.has(event.pointerId)) return;
+      pointers.set(event.pointerId, { clientX: event.clientX, clientY: event.clientY });
+
+      if (pointers.size === 2 && gesture?.type === 'pinch') {
+        const [a, b] = [...pointers.values()];
+        const distance = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+        if (gesture.startDistance > 0) applyZoom(gesture.startZoom * (distance / gesture.startDistance), gesture.anchorX, gesture.anchorY);
+        return;
+      }
+
+      if (gesture?.type === 'touch' && gesture.pointerId === event.pointerId && Math.hypot(event.clientX - gesture.startX, event.clientY - gesture.startY) > TAP_TOLERANCE) {
+        gesture.moved = true;
+      }
     });
 
-    function finishPointer(event) {
-      const state = pointers.get(event.pointerId);
-      if (!state) return;
-
-      if (event.pointerType === 'touch') {
-        const wasPinching = Boolean(pinchGesture);
-        pointers.delete(event.pointerId);
-        if (pointers.size < 2) pinchGesture = null;
-        if (!wasPinching && pointers.size === 0 && Math.hypot(event.clientX - state.startX, event.clientY - state.startY) <= TAP_TOLERANCE) {
-          selectCell(event.clientX, event.clientY);
+    viewport.addEventListener('pointerup', (event) => {
+      if (event.pointerType !== 'touch') {
+        if (gesture?.pointerId === event.pointerId) {
+          if (!gesture.moved) selectCell(event.clientX, event.clientY);
+          gesture = null;
         }
         return;
       }
 
+      const wasPinching = gesture?.type === 'pinch';
       pointers.delete(event.pointerId);
-      if (primaryGesture?.id === event.pointerId) {
-        if (!primaryGesture.moved) selectCell(event.clientX, event.clientY);
-        primaryGesture = null;
+
+      if (wasPinching || pointers.size > 0) {
+        if (pointers.size === 1) {
+          const [remainingId, remaining] = pointers.entries().next().value;
+          gesture = { type: 'touch', pointerId: remainingId, startX: remaining.clientX, startY: remaining.clientY, moved: true };
+        } else if (pointers.size === 0) {
+          gesture = null;
+        }
+        return;
       }
-    }
 
-    viewport.addEventListener('pointerup', finishPointer);
-    viewport.addEventListener('pointercancel', finishPointer);
+      if (gesture?.type === 'touch' && gesture.pointerId === event.pointerId) {
+        if (!gesture.moved) selectCell(event.clientX, event.clientY);
+        gesture = null;
+      }
+    });
 
-    startGame.addEventListener('click', openCity);
+    viewport.addEventListener('pointercancel', (event) => {
+      pointers.delete(event.pointerId);
+      if (pointers.size < 2) gesture = null;
+    });
+
+    viewport.addEventListener('click', (event) => {
+      if (event.detail !== 1 || event.pointerType === 'touch') return;
+      selectCell(event.clientX, event.clientY);
+    });
+
     renderZoom();
+    startGame.addEventListener('click', openCity);
   </script>
 </body>
 </html>`;
@@ -319,5 +325,5 @@ const server = createServer((req, res) => {
 });
 
 server.listen(port, () => {
-  console.log(`w317d05 listening on port ${port}`);
+  console.log(\`w317d05 listening on port \${port}\`);
 });
