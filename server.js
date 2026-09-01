@@ -20,25 +20,9 @@ const html = `<!doctype html>
     .screen { min-height: 100vh; }
     .welcome { display: grid; place-items: center; padding: 28px; }
     .welcome[hidden], .game[hidden] { display: none; }
-    .scene {
-      position: relative;
-      width: min(1100px, 92vw);
-      padding: 72px;
-      border: 1px solid rgba(24, 35, 42, .1);
-      border-radius: 32px;
-      background: rgba(255,255,255,.86);
-      box-shadow: 0 30px 90px rgba(38, 69, 54, .18);
-      backdrop-filter: blur(14px);
-      overflow: hidden;
-    }
+    .scene { position: relative; width: min(1100px, 92vw); padding: 72px; border: 1px solid rgba(24, 35, 42, .1); border-radius: 32px; background: rgba(255,255,255,.86); box-shadow: 0 30px 90px rgba(38, 69, 54, .18); backdrop-filter: blur(14px); overflow: hidden; }
     .sun { position: absolute; width: 220px; height: 220px; top: -90px; right: -60px; border-radius: 50%; background: #f7d77c; opacity: .75; }
-    .welcome-grid {
-      position: absolute; inset: 0; opacity: .18;
-      background-image: linear-gradient(rgba(24,35,42,.14) 1px, transparent 1px), linear-gradient(90deg, rgba(24,35,42,.14) 1px, transparent 1px);
-      background-size: 28px 28px;
-      transform: perspective(700px) rotateX(58deg) scale(1.45) translateY(35%);
-      transform-origin: bottom center;
-    }
+    .welcome-grid { position: absolute; inset: 0; opacity: .18; background-image: linear-gradient(rgba(24,35,42,.14) 1px, transparent 1px), linear-gradient(90deg, rgba(24,35,42,.14) 1px, transparent 1px); background-size: 28px 28px; transform: perspective(700px) rotateX(58deg) scale(1.45) translateY(35%); transform-origin: bottom center; }
     .content { position: relative; z-index: 2; max-width: 760px; }
     .eyebrow { display: inline-flex; padding: 7px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; background: #203239; color: #f5f3e9; }
     h1 { margin: 22px 0 12px; font-size: clamp(56px, 9vw, 108px); line-height: .9; letter-spacing: -.06em; }
@@ -46,10 +30,7 @@ const html = `<!doctype html>
     .start-row { display: flex; flex-wrap: wrap; align-items: end; gap: 14px; margin-top: 34px; }
     .start-card { display: grid; gap: 7px; }
     .start-card label { font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #52676b; }
-    select, .start-button {
-      min-height: 50px; border: 0; border-radius: 13px; padding: 0 18px;
-      box-shadow: 0 10px 25px rgba(38, 69, 54, .12);
-    }
+    select, .start-button { min-height: 50px; border: 0; border-radius: 13px; padding: 0 18px; box-shadow: 0 10px 25px rgba(38, 69, 54, .12); }
     select { min-width: 170px; background: #f6fbf4; color: #18232a; border: 1px solid rgba(24,35,42,.12); }
     .start-button { cursor: pointer; background: #203239; color: #fff; font-weight: 800; padding-inline: 28px; transition: transform .15s ease, box-shadow .15s ease; }
     .start-button:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(38, 69, 54, .2); }
@@ -76,9 +57,9 @@ const html = `<!doctype html>
     .zoom-level { min-width: 50px; text-align: center; font-size: 12px; font-weight: 800; color: #52676b; }
     .viewport { min-height: 0; overflow: auto; overscroll-behavior: contain; background: #c7d8c3; touch-action: pan-x pan-y; }
     .world { position: relative; width: 24576px; height: 24576px; background-color: #d5e4cf; background-image: linear-gradient(to right, rgba(81,108,78,.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(81,108,78,.22) 1px, transparent 1px); background-size: 48px 48px; }
-    .world::after { content: ""; position: absolute; left: 0; top: 0; width: 24576px; height: 24576px; pointer-events: none; background-image: radial-gradient(circle at center, rgba(255,255,255,.18) 0 1px, transparent 1px); background-size: 48px 48px; }
-    .start-marker { position: absolute; left: 12240px; top: 12240px; width: 48px; height: 48px; border: 2px solid rgba(32,50,57,.25); border-radius: 8px; background: rgba(255,255,255,.25); pointer-events: none; }
-    .selected-cell { position: absolute; pointer-events: none; width: 48px; height: 48px; border: 3px solid #203239; background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.55), 0 0 0 1px rgba(255,255,255,.35); display: none; z-index: 4; }
+    .world::after { content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; background-image: radial-gradient(circle at center, rgba(255,255,255,.18) 0 1px, transparent 1px); background-size: 48px 48px; }
+    .start-marker { position: absolute; border: 2px solid rgba(32,50,57,.25); border-radius: 8px; background: rgba(255,255,255,.25); pointer-events: none; }
+    .selected-cell { position: absolute; pointer-events: none; border: 3px solid #203239; background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.55), 0 0 0 1px rgba(255,255,255,.35); display: none; z-index: 4; }
     .hint { position: fixed; left: 18px; bottom: 16px; z-index: 20; padding: 9px 12px; border-radius: 10px; background: rgba(32,50,57,.84); color: white; font-size: 12px; box-shadow: 0 8px 20px rgba(0,0,0,.12); }
     @media (max-width: 800px) {
       .scene { padding: 48px 36px 210px; }
@@ -100,11 +81,7 @@ const html = `<!doctype html>
         <div class="start-row">
           <div class="start-card">
             <label for="startYear">Start year</label>
-            <select id="startYear" aria-label="Start year">
-              <option value="1925">1925</option>
-              <option value="1975">1975</option>
-              <option value="2025" selected>2025</option>
-            </select>
+            <select id="startYear" aria-label="Start year"><option value="1925">1925</option><option value="1975">1975</option><option value="2025" selected>2025</option></select>
           </div>
           <button class="start-button" id="startGame" type="button">Start Game</button>
         </div>
@@ -128,11 +105,11 @@ const html = `<!doctype html>
     </header>
     <div class="viewport" id="viewport" tabindex="0" aria-label="City viewport">
       <div class="world" id="world">
-        <div class="start-marker" aria-hidden="true"></div>
+        <div class="start-marker" id="startMarker" aria-hidden="true"></div>
         <div class="selected-cell" id="selectedCell" aria-hidden="true"></div>
       </div>
     </div>
-    <div class="hint">512 × 512 tiles · 48 px each · pinch or use + / − to zoom</div>
+    <div class="hint">512 × 512 tiles · 48 px each · click or tap to select · pinch or use + / − to zoom</div>
   </section>
 
   <script>
@@ -147,8 +124,8 @@ const html = `<!doctype html>
     const ZOOM_STEP = 1.2;
     let zoom = 1;
     let simulationTimer = null;
-    let pointerState = null;
-    let pinchState = null;
+    let primaryPointer = null;
+    let pinch = null;
 
     const welcomeScreen = document.getElementById('welcomeScreen');
     const gameScreen = document.getElementById('gameScreen');
@@ -160,6 +137,7 @@ const html = `<!doctype html>
     const zoomIn = document.getElementById('zoomIn');
     const zoomOut = document.getElementById('zoomOut');
     const zoomLevel = document.getElementById('zoomLevel');
+    const startMarker = document.getElementById('startMarker');
     const selectedCell = document.getElementById('selectedCell');
 
     function formatDate(date) {
@@ -167,26 +145,29 @@ const html = `<!doctype html>
     }
 
     function renderZoom() {
+      const tilePixels = TILE_SIZE * zoom;
       world.style.width = WORLD_SIZE * zoom + 'px';
       world.style.height = WORLD_SIZE * zoom + 'px';
-      world.style.backgroundSize = TILE_SIZE * zoom + 'px ' + TILE_SIZE * zoom + 'px';
-      const marker = world.querySelector('.start-marker');
-      marker.style.left = START_X * zoom + 'px';
-      marker.style.top = START_Y * zoom + 'px';
-      marker.style.width = TILE_SIZE * zoom + 'px';
-      marker.style.height = TILE_SIZE * zoom + 'px';
-      selectedCell.style.width = TILE_SIZE * zoom + 'px';
-      selectedCell.style.height = TILE_SIZE * zoom + 'px';
+      world.style.backgroundSize = tilePixels + 'px ' + tilePixels + 'px';
+      startMarker.style.left = START_X * zoom + 'px';
+      startMarker.style.top = START_Y * zoom + 'px';
+      startMarker.style.width = tilePixels + 'px';
+      startMarker.style.height = tilePixels + 'px';
+      selectedCell.style.width = tilePixels + 'px';
+      selectedCell.style.height = tilePixels + 'px';
+      if (selectedCell.dataset.cellX !== undefined) {
+        selectedCell.style.left = Number(selectedCell.dataset.cellX) * tilePixels + 'px';
+        selectedCell.style.top = Number(selectedCell.dataset.cellY) * tilePixels + 'px';
+      }
       zoomLevel.textContent = Math.round(zoom * 100) + '%';
     }
 
     function applyZoom(nextZoom, anchorX = viewport.clientWidth / 2, anchorY = viewport.clientHeight / 2) {
-      const clampedZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, nextZoom));
-      if (clampedZoom === zoom) return;
-
+      const clamped = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, nextZoom));
+      if (clamped === zoom) return;
       const worldX = (viewport.scrollLeft + anchorX) / zoom;
       const worldY = (viewport.scrollTop + anchorY) / zoom;
-      zoom = clampedZoom;
+      zoom = clamped;
       renderZoom();
       viewport.scrollLeft = worldX * zoom - anchorX;
       viewport.scrollTop = worldY * zoom - anchorY;
@@ -202,29 +183,36 @@ const html = `<!doctype html>
       }, DAY_MS);
     }
 
+    function selectCell(clientX, clientY) {
+      const rect = world.getBoundingClientRect();
+      const localX = clientX - rect.left;
+      const localY = clientY - rect.top;
+      const tilePixels = TILE_SIZE * zoom;
+      const cellX = Math.floor(localX / tilePixels);
+      const cellY = Math.floor(localY / tilePixels);
+      if (cellX < 0 || cellY < 0 || cellX >= GRID_SIZE || cellY >= GRID_SIZE) return;
+      selectedCell.dataset.cellX = String(cellX);
+      selectedCell.dataset.cellY = String(cellY);
+      selectedCell.style.left = cellX * tilePixels + 'px';
+      selectedCell.style.top = cellY * tilePixels + 'px';
+      selectedCell.style.width = tilePixels + 'px';
+      selectedCell.style.height = tilePixels + 'px';
+      selectedCell.style.display = 'block';
+    }
+
     function openCity() {
       const year = startYear.value;
       welcomeScreen.hidden = true;
       gameScreen.hidden = false;
       zoom = 1;
+      selectedCell.dataset.cellX = '';
+      selectedCell.dataset.cellY = '';
       selectedCell.style.display = 'none';
       renderZoom();
       viewport.scrollLeft = START_X - viewport.clientWidth / 2;
       viewport.scrollTop = START_Y - viewport.clientHeight / 2;
       viewport.focus({ preventScroll: true });
       startSimulation(year);
-    }
-
-    function selectCell(clientX, clientY) {
-      const rect = viewport.getBoundingClientRect();
-      const localX = clientX - rect.left + viewport.scrollLeft;
-      const localY = clientY - rect.top + viewport.scrollTop;
-      const cellX = Math.floor(localX / (TILE_SIZE * zoom));
-      const cellY = Math.floor(localY / (TILE_SIZE * zoom));
-      if (cellX < 0 || cellY < 0 || cellX >= GRID_SIZE || cellY >= GRID_SIZE) return;
-      selectedCell.style.left = cellX * TILE_SIZE * zoom + 'px';
-      selectedCell.style.top = cellY * TILE_SIZE * zoom + 'px';
-      selectedCell.style.display = 'block';
     }
 
     zoomIn.addEventListener('click', () => applyZoom(zoom * ZOOM_STEP));
@@ -234,68 +222,65 @@ const html = `<!doctype html>
       if (!event.ctrlKey) return;
       event.preventDefault();
       const rect = viewport.getBoundingClientRect();
-      const anchorX = event.clientX - rect.left;
-      const anchorY = event.clientY - rect.top;
-      applyZoom(zoom * (event.deltaY < 0 ? 1.1 : 1 / 1.1), anchorX, anchorY);
+      applyZoom(zoom * (event.deltaY < 0 ? 1.1 : 1 / 1.1), event.clientX - rect.left, event.clientY - rect.top);
     }, { passive: false });
 
     viewport.addEventListener('pointerdown', (event) => {
       if (event.pointerType === 'touch') {
-        if (!pinchState) pinchState = new Map();
-        pinchState.set(event.pointerId, { x: event.clientX, y: event.clientY });
-        if (pinchState.size === 2) {
-          const points = [...pinchState.values()];
-          pinchState.startDistance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
-          pinchState.startZoom = zoom;
+        if (!pinch) pinch = { pointers: new Map(), startDistance: 0, startZoom: zoom, startCenterX: 0, startCenterY: 0 };
+        pinch.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (pinch.pointers.size === 2) {
+          const points = [...pinch.pointers.values()];
+          pinch.startDistance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+          pinch.startZoom = zoom;
+          const rect = viewport.getBoundingClientRect();
+          pinch.startCenterX = ((points[0].x + points[1].x) / 2) - rect.left;
+          pinch.startCenterY = ((points[0].y + points[1].y) / 2) - rect.top;
         }
         return;
       }
-      pointerState = { id: event.pointerId, x: event.clientX, y: event.clientY, moved: false };
+      primaryPointer = { id: event.pointerId, x: event.clientX, y: event.clientY, moved: false };
     });
 
     viewport.addEventListener('pointermove', (event) => {
-      if (event.pointerType === 'touch' && pinchState?.has(event.pointerId)) {
-        pinchState.set(event.pointerId, { x: event.clientX, y: event.clientY });
-        if (pinchState.size !== 2 || !pinchState.startDistance) return;
-        const points = [...pinchState.values()];
+      if (event.pointerType === 'touch' && pinch?.pointers.has(event.pointerId)) {
+        pinch.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (pinch.pointers.size !== 2 || !pinch.startDistance) return;
+        const points = [...pinch.pointers.values()];
         const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
         if (!distance) return;
         const rect = viewport.getBoundingClientRect();
-        const anchorX = ((points[0].x + points[1].x) / 2) - rect.left;
-        const anchorY = ((points[0].y + points[1].y) / 2) - rect.top;
-        applyZoom(pinchState.startZoom * (distance / pinchState.startDistance), anchorX, anchorY);
+        const centerX = ((points[0].x + points[1].x) / 2) - rect.left;
+        const centerY = ((points[0].y + points[1].y) / 2) - rect.top;
+        applyZoom(pinch.startZoom * (distance / pinch.startDistance), centerX, centerY);
+        const centerWorldX = (viewport.scrollLeft + centerX) / zoom;
+        const centerWorldY = (viewport.scrollTop + centerY) / zoom;
+        const deltaX = centerX - pinch.startCenterX;
+        const deltaY = centerY - pinch.startCenterY;
+        viewport.scrollLeft -= deltaX;
+        viewport.scrollTop -= deltaY;
+        void centerWorldX; void centerWorldY;
         return;
       }
-      if (!pointerState || pointerState.id !== event.pointerId) return;
-      if (Math.hypot(event.clientX - pointerState.x, event.clientY - pointerState.y) > 8) pointerState.moved = true;
+      if (!primaryPointer || primaryPointer.id !== event.pointerId) return;
+      if (Math.hypot(event.clientX - primaryPointer.x, event.clientY - primaryPointer.y) > 8) primaryPointer.moved = true;
     });
 
-    viewport.addEventListener('pointerup', (event) => {
+    function finishPointer(event) {
       if (event.pointerType === 'touch') {
-        if (pinchState?.has(event.pointerId)) pinchState.delete(event.pointerId);
-        if (pinchState?.size < 2) { delete pinchState.startDistance; delete pinchState.startZoom; }
-        if (pinchState?.size === 0) pinchState = null;
+        if (!pinch?.pointers.has(event.pointerId)) return;
+        pinch.pointers.delete(event.pointerId);
+        if (pinch.pointers.size < 2) pinch.startDistance = 0;
+        if (pinch.pointers.size === 0) pinch = null;
         return;
       }
-      if (pointerState?.id !== event.pointerId) return;
-      if (!pointerState.moved) selectCell(event.clientX, event.clientY);
-      pointerState = null;
-    });
+      if (!primaryPointer || primaryPointer.id !== event.pointerId) return;
+      if (!primaryPointer.moved) selectCell(event.clientX, event.clientY);
+      primaryPointer = null;
+    }
 
-    viewport.addEventListener('pointercancel', (event) => {
-      if (event.pointerType === 'touch') {
-        pinchState?.delete(event.pointerId);
-        if (pinchState?.size === 0) pinchState = null;
-        return;
-      }
-      if (pointerState?.id === event.pointerId) pointerState = null;
-    });
-
-    viewport.addEventListener('click', (event) => {
-      if (event.detail !== 1 || event.pointerType === 'touch') return;
-      selectCell(event.clientX, event.clientY);
-    });
-
+    viewport.addEventListener('pointerup', finishPointer);
+    viewport.addEventListener('pointercancel', finishPointer);
     startGame.addEventListener('click', openCity);
     renderZoom();
   </script>
