@@ -9,18 +9,14 @@ const html = `<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>w317d05 — City Builder</title>
   <style>
-    :root {
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: #18232a;
-      background: #dff1e5;
-    }
+    :root { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #18232a; background: #dff1e5; }
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; overflow: hidden; background: linear-gradient(135deg, #cce8d4 0%, #eff7eb 50%, #bddbc5 100%); }
     button, select { font: inherit; }
     .screen { min-height: 100vh; }
     .welcome { display: grid; place-items: center; padding: 28px; }
     .welcome[hidden], .game[hidden] { display: none; }
-    .scene { position: relative; width: min(1100px, 92vw); padding: 72px; border: 1px solid rgba(24, 35, 42, .1); border-radius: 32px; background: rgba(255,255,255,.86); box-shadow: 0 30px 90px rgba(38, 69, 54, .18); backdrop-filter: blur(14px); overflow: hidden; }
+    .scene { position: relative; width: min(1100px, 92vw); padding: 72px; border: 1px solid rgba(24,35,42,.1); border-radius: 32px; background: rgba(255,255,255,.86); box-shadow: 0 30px 90px rgba(38,69,54,.18); backdrop-filter: blur(14px); overflow: hidden; }
     .sun { position: absolute; width: 220px; height: 220px; top: -90px; right: -60px; border-radius: 50%; background: #f7d77c; opacity: .75; }
     .welcome-grid { position: absolute; inset: 0; opacity: .18; background-image: linear-gradient(rgba(24,35,42,.14) 1px, transparent 1px), linear-gradient(90deg, rgba(24,35,42,.14) 1px, transparent 1px); background-size: 28px 28px; transform: perspective(700px) rotateX(58deg) scale(1.45) translateY(35%); transform-origin: bottom center; }
     .content { position: relative; z-index: 2; max-width: 760px; }
@@ -30,10 +26,9 @@ const html = `<!doctype html>
     .start-row { display: flex; flex-wrap: wrap; align-items: end; gap: 14px; margin-top: 34px; }
     .start-card { display: grid; gap: 7px; }
     .start-card label { font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #52676b; }
-    select, .start-button { min-height: 50px; border: 0; border-radius: 13px; padding: 0 18px; box-shadow: 0 10px 25px rgba(38, 69, 54, .12); }
+    select, .start-button { min-height: 50px; border: 0; border-radius: 13px; padding: 0 18px; box-shadow: 0 10px 25px rgba(38,69,54,.12); }
     select { min-width: 170px; background: #f6fbf4; color: #18232a; border: 1px solid rgba(24,35,42,.12); }
-    .start-button { cursor: pointer; background: #203239; color: #fff; font-weight: 800; padding-inline: 28px; transition: transform .15s ease, box-shadow .15s ease; }
-    .start-button:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(38, 69, 54, .2); }
+    .start-button { cursor: pointer; background: #203239; color: #fff; font-weight: 800; padding-inline: 28px; }
     .status { display: flex; gap: 10px; align-items: center; margin-top: 18px; font-size: 14px; color: #52676b; }
     .dot { width: 10px; height: 10px; border-radius: 50%; background: #63a86f; box-shadow: 0 0 0 5px rgba(99,168,111,.14); }
     .city { position: absolute; z-index: 1; right: 52px; bottom: 34px; width: 320px; height: 260px; }
@@ -42,7 +37,6 @@ const html = `<!doctype html>
     .b1 { width: 74px; height: 120px; left: 24px; }.b2 { width: 96px; height: 174px; left: 98px; background: #627f83; }.b3 { width: 62px; height: 210px; left: 198px; background: #49676b; }.b4 { width: 48px; height: 92px; left: 260px; background: #88a7a1; }
     .road { position: absolute; left: -12px; bottom: -36px; width: 370px; height: 92px; background: #526369; transform: rotate(-13deg); border-radius: 18px; box-shadow: 0 -10px 0 rgba(255,255,255,.22); }
     .road::after { content: ""; position: absolute; top: 44px; left: 0; right: 0; border-top: 5px dashed #eadf9c; }
-
     .game { height: 100vh; display: grid; grid-template-rows: 68px 1fr; background: #dbe8d9; }
     .dashboard { z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 22px; background: rgba(255,255,255,.94); border-bottom: 1px solid rgba(24,35,42,.12); box-shadow: 0 8px 25px rgba(38,69,54,.1); }
     .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; letter-spacing: -.02em; }
@@ -57,7 +51,7 @@ const html = `<!doctype html>
     .zoom-level { min-width: 50px; text-align: center; font-size: 12px; font-weight: 800; color: #52676b; }
     .viewport { min-height: 0; overflow: auto; overscroll-behavior: contain; background: #c7d8c3; touch-action: pan-x pan-y; }
     .world { position: relative; width: 24576px; height: 24576px; background-color: #d5e4cf; background-image: linear-gradient(to right, rgba(81,108,78,.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(81,108,78,.22) 1px, transparent 1px); background-size: 48px 48px; }
-    .world::after { content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; background-image: radial-gradient(circle at center, rgba(255,255,255,.18) 0 1px, transparent 1px); background-size: 48px 48px; }
+    .world::after { content: ""; position: absolute; inset: 0; pointer-events: none; background-image: radial-gradient(circle at center, rgba(255,255,255,.18) 0 1px, transparent 1px); background-size: 48px 48px; }
     .start-marker { position: absolute; border: 2px solid rgba(32,50,57,.25); border-radius: 8px; background: rgba(255,255,255,.25); pointer-events: none; }
     .selected-cell { position: absolute; pointer-events: none; border: 3px solid #203239; background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,.55), 0 0 0 1px rgba(255,255,255,.35); display: none; z-index: 4; }
     .hint { position: fixed; left: 18px; bottom: 16px; z-index: 20; padding: 9px 12px; border-radius: 10px; background: rgba(32,50,57,.84); color: white; font-size: 12px; box-shadow: 0 8px 20px rgba(0,0,0,.12); }
@@ -122,10 +116,12 @@ const html = `<!doctype html>
     const MIN_ZOOM = 0.5;
     const MAX_ZOOM = 2.5;
     const ZOOM_STEP = 1.2;
+    const TAP_TOLERANCE = 8;
     let zoom = 1;
     let simulationTimer = null;
-    let primaryPointer = null;
-    let pinch = null;
+    let pointers = new Map();
+    let primaryGesture = null;
+    let pinchGesture = null;
 
     const welcomeScreen = document.getElementById('welcomeScreen');
     const gameScreen = document.getElementById('gameScreen');
@@ -153,11 +149,11 @@ const html = `<!doctype html>
       startMarker.style.top = START_Y * zoom + 'px';
       startMarker.style.width = tilePixels + 'px';
       startMarker.style.height = tilePixels + 'px';
-      selectedCell.style.width = tilePixels + 'px';
-      selectedCell.style.height = tilePixels + 'px';
       if (selectedCell.dataset.cellX !== undefined) {
         selectedCell.style.left = Number(selectedCell.dataset.cellX) * tilePixels + 'px';
         selectedCell.style.top = Number(selectedCell.dataset.cellY) * tilePixels + 'px';
+        selectedCell.style.width = tilePixels + 'px';
+        selectedCell.style.height = tilePixels + 'px';
       }
       zoomLevel.textContent = Math.round(zoom * 100) + '%';
     }
@@ -173,21 +169,12 @@ const html = `<!doctype html>
       viewport.scrollTop = worldY * zoom - anchorY;
     }
 
-    function startSimulation(year) {
-      let currentDate = new Date(Date.UTC(Number(year), 0, 1));
-      gameDate.textContent = formatDate(currentDate);
-      clearInterval(simulationTimer);
-      simulationTimer = setInterval(() => {
-        currentDate.setUTCDate(currentDate.getUTCDate() + 1);
-        gameDate.textContent = formatDate(currentDate);
-      }, DAY_MS);
-    }
-
     function selectCell(clientX, clientY) {
       const rect = world.getBoundingClientRect();
       const localX = clientX - rect.left;
       const localY = clientY - rect.top;
-      const tilePixels = TILE_SIZE * zoom;
+      if (localX < 0 || localY < 0) return;
+      const tilePixels = rect.width / GRID_SIZE;
       const cellX = Math.floor(localX / tilePixels);
       const cellY = Math.floor(localY / tilePixels);
       if (cellX < 0 || cellY < 0 || cellX >= GRID_SIZE || cellY >= GRID_SIZE) return;
@@ -200,19 +187,37 @@ const html = `<!doctype html>
       selectedCell.style.display = 'block';
     }
 
+    function startSimulation(year) {
+      let currentDate = new Date(Date.UTC(Number(year), 0, 1));
+      gameDate.textContent = formatDate(currentDate);
+      clearInterval(simulationTimer);
+      simulationTimer = setInterval(() => {
+        currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+        gameDate.textContent = formatDate(currentDate);
+      }, DAY_MS);
+    }
+
     function openCity() {
       const year = startYear.value;
       welcomeScreen.hidden = true;
       gameScreen.hidden = false;
       zoom = 1;
-      selectedCell.dataset.cellX = '';
-      selectedCell.dataset.cellY = '';
       selectedCell.style.display = 'none';
+      delete selectedCell.dataset.cellX;
+      delete selectedCell.dataset.cellY;
       renderZoom();
       viewport.scrollLeft = START_X - viewport.clientWidth / 2;
       viewport.scrollTop = START_Y - viewport.clientHeight / 2;
       viewport.focus({ preventScroll: true });
       startSimulation(year);
+    }
+
+    function pointerDistance(a, b) {
+      return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    }
+
+    function pointerMidpoint(a, b) {
+      return { x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 };
     }
 
     zoomIn.addEventListener('click', () => applyZoom(zoom * ZOOM_STEP));
@@ -226,61 +231,77 @@ const html = `<!doctype html>
     }, { passive: false });
 
     viewport.addEventListener('pointerdown', (event) => {
+      pointers.set(event.pointerId, { clientX: event.clientX, clientY: event.clientY, startX: event.clientX, startY: event.clientY, type: event.pointerType });
+
       if (event.pointerType === 'touch') {
-        if (!pinch) pinch = { pointers: new Map(), startDistance: 0, startZoom: zoom, startCenterX: 0, startCenterY: 0 };
-        pinch.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-        if (pinch.pointers.size === 2) {
-          const points = [...pinch.pointers.values()];
-          pinch.startDistance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
-          pinch.startZoom = zoom;
+        if (pointers.size === 2) {
+          const [a, b] = [...pointers.values()];
+          const midpoint = pointerMidpoint(a, b);
           const rect = viewport.getBoundingClientRect();
-          pinch.startCenterX = ((points[0].x + points[1].x) / 2) - rect.left;
-          pinch.startCenterY = ((points[0].y + points[1].y) / 2) - rect.top;
+          pinchGesture = {
+            startDistance: pointerDistance(a, b),
+            startZoom: zoom,
+            anchorX: midpoint.x - rect.left,
+            anchorY: midpoint.y - rect.top
+          };
+          primaryGesture = null;
         }
         return;
       }
-      primaryPointer = { id: event.pointerId, x: event.clientX, y: event.clientY, moved: false };
+
+      primaryGesture = { id: event.pointerId, moved: false, startX: event.clientX, startY: event.clientY };
     });
 
     viewport.addEventListener('pointermove', (event) => {
-      if (event.pointerType === 'touch' && pinch?.pointers.has(event.pointerId)) {
-        pinch.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-        if (pinch.pointers.size !== 2 || !pinch.startDistance) return;
-        const points = [...pinch.pointers.values()];
-        const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
-        if (!distance) return;
-        const rect = viewport.getBoundingClientRect();
-        const centerX = ((points[0].x + points[1].x) / 2) - rect.left;
-        const centerY = ((points[0].y + points[1].y) / 2) - rect.top;
-        applyZoom(pinch.startZoom * (distance / pinch.startDistance), centerX, centerY);
-        const centerWorldX = (viewport.scrollLeft + centerX) / zoom;
-        const centerWorldY = (viewport.scrollTop + centerY) / zoom;
-        const deltaX = centerX - pinch.startCenterX;
-        const deltaY = centerY - pinch.startCenterY;
-        viewport.scrollLeft -= deltaX;
-        viewport.scrollTop -= deltaY;
-        void centerWorldX; void centerWorldY;
+      const state = pointers.get(event.pointerId);
+      if (!state) return;
+      state.clientX = event.clientX;
+      state.clientY = event.clientY;
+      pointers.set(event.pointerId, state);
+
+      if (event.pointerType === 'touch' && pointers.size >= 2) {
+        const [a, b] = [...pointers.values()];
+        if (!pinchGesture) {
+          const midpoint = pointerMidpoint(a, b);
+          const rect = viewport.getBoundingClientRect();
+          pinchGesture = { startDistance: pointerDistance(a, b), startZoom: zoom, anchorX: midpoint.x - rect.left, anchorY: midpoint.y - rect.top };
+        }
+        const distance = pointerDistance(a, b);
+        if (pinchGesture.startDistance > 0) {
+          applyZoom(pinchGesture.startZoom * (distance / pinchGesture.startDistance), pinchGesture.anchorX, pinchGesture.anchorY);
+        }
         return;
       }
-      if (!primaryPointer || primaryPointer.id !== event.pointerId) return;
-      if (Math.hypot(event.clientX - primaryPointer.x, event.clientY - primaryPointer.y) > 8) primaryPointer.moved = true;
+
+      const gesture = primaryGesture;
+      if (!gesture || gesture.id !== event.pointerId) return;
+      if (Math.hypot(event.clientX - gesture.startX, event.clientY - gesture.startY) > TAP_TOLERANCE) gesture.moved = true;
     });
 
     function finishPointer(event) {
+      const state = pointers.get(event.pointerId);
+      if (!state) return;
+
       if (event.pointerType === 'touch') {
-        if (!pinch?.pointers.has(event.pointerId)) return;
-        pinch.pointers.delete(event.pointerId);
-        if (pinch.pointers.size < 2) pinch.startDistance = 0;
-        if (pinch.pointers.size === 0) pinch = null;
+        const wasPinching = Boolean(pinchGesture);
+        pointers.delete(event.pointerId);
+        if (pointers.size < 2) pinchGesture = null;
+        if (!wasPinching && pointers.size === 0 && Math.hypot(event.clientX - state.startX, event.clientY - state.startY) <= TAP_TOLERANCE) {
+          selectCell(event.clientX, event.clientY);
+        }
         return;
       }
-      if (!primaryPointer || primaryPointer.id !== event.pointerId) return;
-      if (!primaryPointer.moved) selectCell(event.clientX, event.clientY);
-      primaryPointer = null;
+
+      pointers.delete(event.pointerId);
+      if (primaryGesture?.id === event.pointerId) {
+        if (!primaryGesture.moved) selectCell(event.clientX, event.clientY);
+        primaryGesture = null;
+      }
     }
 
     viewport.addEventListener('pointerup', finishPointer);
     viewport.addEventListener('pointercancel', finishPointer);
+
     startGame.addEventListener('click', openCity);
     renderZoom();
   </script>
