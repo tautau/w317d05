@@ -170,17 +170,20 @@ const html = `<!doctype html>
     }
 
     function selectCell(clientX, clientY) {
-      const worldRect = world.getBoundingClientRect();
-      const localX = clientX - worldRect.left;
-      const localY = clientY - worldRect.top;
-      if (localX < 0 || localY < 0 || localX >= worldRect.width || localY >= worldRect.height) return;
+      // client coordinates -> viewport coordinates -> world CSS coordinates.
+      // Do not use world.getBoundingClientRect().width here: at some zoom levels
+      // browsers can report fractional layout dimensions differently from the
+      // positioned child, producing a visible offset after scrolling/zooming.
+      const viewportRect = viewport.getBoundingClientRect();
+      const viewportX = clientX - viewportRect.left;
+      const viewportY = clientY - viewportRect.top;
+      if (viewportX < 0 || viewportY < 0 || viewportX >= viewport.clientWidth || viewportY >= viewport.clientHeight) return;
 
-      // Use the rendered tile size directly. getBoundingClientRect() includes the
-      // actual scroll position and all zoom scaling, so this keeps the hit-test
-      // and selection outline in exactly the same coordinate space at every zoom.
-      const tilePixels = worldRect.width / GRID_SIZE;
-      const cellX = Math.min(GRID_SIZE - 1, Math.floor(localX / tilePixels));
-      const cellY = Math.min(GRID_SIZE - 1, Math.floor(localY / tilePixels));
+      const worldX = viewport.scrollLeft + viewportX;
+      const worldY = viewport.scrollTop + viewportY;
+      const tilePixels = TILE_SIZE * zoom;
+      const cellX = Math.max(0, Math.min(GRID_SIZE - 1, Math.floor(worldX / tilePixels)));
+      const cellY = Math.max(0, Math.min(GRID_SIZE - 1, Math.floor(worldY / tilePixels)));
 
       selectedCell.dataset.cellX = String(cellX);
       selectedCell.dataset.cellY = String(cellY);
