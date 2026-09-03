@@ -6,7 +6,7 @@ const html = `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>w317d05 — City Builder</title>
   <style>
     :root { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #18232a; background: #dff1e5; }
@@ -170,10 +170,6 @@ const html = `<!doctype html>
     }
 
     function selectCell(clientX, clientY) {
-      // client coordinates -> viewport coordinates -> world CSS coordinates.
-      // Do not use world.getBoundingClientRect().width here: at some zoom levels
-      // browsers can report fractional layout dimensions differently from the
-      // positioned child, producing a visible offset after scrolling/zooming.
       const viewportRect = viewport.getBoundingClientRect();
       const viewportX = clientX - viewportRect.left;
       const viewportY = clientY - viewportRect.top;
