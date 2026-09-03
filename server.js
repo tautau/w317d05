@@ -175,9 +175,12 @@ const html = `<!doctype html>
       const localY = clientY - worldRect.top;
       if (localX < 0 || localY < 0 || localX >= worldRect.width || localY >= worldRect.height) return;
 
-      const cellX = Math.min(GRID_SIZE - 1, Math.floor((localX / worldRect.width) * GRID_SIZE));
-      const cellY = Math.min(GRID_SIZE - 1, Math.floor((localY / worldRect.height) * GRID_SIZE));
+      // Use the rendered tile size directly. getBoundingClientRect() includes the
+      // actual scroll position and all zoom scaling, so this keeps the hit-test
+      // and selection outline in exactly the same coordinate space at every zoom.
       const tilePixels = worldRect.width / GRID_SIZE;
+      const cellX = Math.min(GRID_SIZE - 1, Math.floor(localX / tilePixels));
+      const cellY = Math.min(GRID_SIZE - 1, Math.floor(localY / tilePixels));
 
       selectedCell.dataset.cellX = String(cellX);
       selectedCell.dataset.cellY = String(cellY);
